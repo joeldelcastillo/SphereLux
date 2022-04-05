@@ -13,11 +13,6 @@ const long interval = 300000;
 
 AsyncWebServer server(80);
 
-// Direcciones de cada bailarin
-// const char dir0[] = "/b0";
-// const char dir1[] = "/b1";
-// const char dir2[] = "/b2";
-
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
@@ -28,57 +23,66 @@ const char index_html[] PROGMEM = R"rawliteral(
     html {font-family: Arial; display: inline-block; text-align: center;}
     h2 {font-size: 3.0rem;}
     p {font-size: 3.0rem;}
-    body {max-width: 600px; margin:0px auto; padding-bottom: 25px;}
-    .switch {position: relative; display: inline-block; width: 120px; height: 68px} 
-    .switch input {display: none}
-    .slider {position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; border-radius: 6px}
-    .slider:before {position: absolute; content: ""; height: 52px; width: 52px; left: 8px; bottom: 8px; background-color: #fff; -webkit-transition: .4s; transition: .4s; border-radius: 3px}
-    input:checked+.slider {background-color: #b30000}
-    input:checked+.slider:before {-webkit-transform: translateX(52px); -ms-transform: translateX(52px); transform: translateX(52px)}
+    body {margin:0px auto; padding-bottom: 25px;}
   </style>
 </head>
-<body>
-  <h2>ESP Web Server</h2>
-  <p>Audio settings:</p>
+  <body>
+    <div>
+      <input
+        type="range"
+        id="cowbell"
+        name="cowbell"
+        min="0"
+        max="100"
+        value="90"
+        step="5"
+      />
+      <output></output>
+      <label for="cowbell">Cowbell</label>
+    </div>
+    <script>
+      let i = document.querySelector("input"),
+        o = document.querySelector("output");
 
-<div>
-  <input type="range" id="volume" name="volume"
-         min="0" max="11">
-  <label for="volume">Volume</label>
-</div>
+      o.innerHTML = i.value;
 
-<div>
-  <input type="range" id="cowbell" name="cowbell" 
-         min="0" max="100" value="90" step="10">
-  <label for="cowbell">Cowbell</label>
-</div>
-
-<script>function toggleCheckbox(element) {
-  var xhr = new XMLHttpRequest();
-  if(element.checked){ xhr.open("GET", "/update?output="+element.id+"&state=1", true); }
-  else { xhr.open("GET", "/update?output="+element.id+"&state=0", true); }
-  xhr.send();
-}
-</script>
-</body>
+      // use 'change' instead to see the difference in response
+      i.addEventListener(
+        "input",
+        function () {
+          var xhr = new XMLHttpRequest();
+          o.innerHTML = i.value;
+          xhr.open("GET", "/b0?anim=" + i.value, true);
+          xhr.send();
+        },
+        false
+      );
+      
+    </script>
+  </body>
 </html>
 )rawliteral";
 
 void setup()
 {
-  Serial.begin(115200);
+  Serial.begin(9600);
   light.setPins();
   accessPoint.setAccess();
+
+  server.on("/lux", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "text/html", index_html); });
+
   server.on("/b0", HTTP_GET, [](AsyncWebServerRequest *request)
             {
       if (request->hasParam("anim"))
       {
         // Valor de error
         String animS = request->getParam("anim")->value();
-
         anim = animS.toInt();
-        request->send_P(200, "text/html", index_html);
+        Serial.println(anim);
+        request->send_P(200, "text/html", "bien bro");
       } });
+
   // Start server
   server.begin();
 }
