@@ -57,12 +57,11 @@ public:
   void setPins()
   {
 
-
     FastLED.addLeds<WS2812B, 15, GRB>(leds[0], NUM_PER_STRIP[0]);
     FastLED.addLeds<WS2812B, 2, GRB>(leds[1], NUM_PER_STRIP[1]);
     FastLED.addLeds<WS2812B, 4, GRB>(leds[2], NUM_PER_STRIP[2]);
     FastLED.addLeds<WS2812B, 16, GRB>(leds[3], NUM_PER_STRIP[3]);
-    
+
     FastLED.addLeds<WS2812B, 17, GRB>(leds[4], NUM_PER_STRIP[4]);
     FastLED.addLeds<WS2812B, 5, GRB>(leds[5], NUM_PER_STRIP[5]);
     FastLED.addLeds<WS2812B, 18, GRB>(leds[6], NUM_PER_STRIP[6]);
@@ -81,7 +80,7 @@ public:
     FastLED.addLeds<WS2812B, 13, GRB>(leds[16], NUM_PER_STRIP[16]);
     FastLED.addLeds<WS2812B, 12, GRB>(leds[17], NUM_PER_STRIP[17]);
     FastLED.addLeds<WS2812B, 14, GRB>(leds[18], NUM_PER_STRIP[18]);
-//    FastLED.addLeds<WS2812B, 1, GRB>(leds[18], NUM_PER_STRIP[18]);
+    //    FastLED.addLeds<WS2812B, 1, GRB>(leds[18], NUM_PER_STRIP[18]);
 
     FastLED.setBrightness(BRIGHTNESS);
   }
@@ -101,34 +100,32 @@ public:
 
   void colorOne(int strip, int color, int intensity)
   {
-    for (int j = 0; j < NUM_PER_STRIP[strip]; j++) {
-      leds[strip][j] = CHSV(color, 255, floor(255 * intensity/100));
+    for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+    {
+      leds[strip][j] = CHSV(color, 255, floor(255 * intensity / 100));
     }
   }
 
-
-
-void waveIntensity (int counter, int color){
- FastLED.clear();
-  for (int i = 0; i < NUM_STRIPS; i++)
+  void waveIntensity(int counter, int color)
+  {
+    FastLED.clear();
+    for (int i = 0; i < NUM_STRIPS; i++)
     {
-      float k = mapF (i, 0, NUM_STRIPS, 0, 2* PI  );
-      colorOne(i, color,  floor (mapF(sin( k + 0.01 * counter), -1, 1, 0, 100)));
+      float k = mapF(i, 0, NUM_STRIPS, 0, 2 * PI);
+      colorOne(i, color, floor(mapF(sin(k + 0.01 * counter), -1, 1, 0, 100)));
     }
-  FastLED.show();
-}
+    FastLED.show();
+  }
 
-
-//void waveIntensity (int counter, int color){
-// FastLED.clear();
-//  for (int i = 0; i < NUM_STRIPS; i++)
-//    {
-//      float k = mapF (i, 0, NUM_STRIPS, 0, 2* PI  );
-//      colorOne(i, color,  floor (mapF(sin(k + counter), 0, 1, 0, 100))/100);
-//    }
-//  FastLED.show();
-//}
-
+  // void waveIntensity (int counter, int color){
+  //  FastLED.clear();
+  //   for (int i = 0; i < NUM_STRIPS; i++)
+  //     {
+  //       float k = mapF (i, 0, NUM_STRIPS, 0, 2* PI  );
+  //       colorOne(i, color,  floor (mapF(sin(k + counter), 0, 1, 0, 100))/100);
+  //     }
+  //   FastLED.show();
+  // }
 
   void intensity(int hue, int intensity)
   {
@@ -166,8 +163,9 @@ void waveIntensity (int counter, int color){
     {
       if (j % ratio == 0)
       {
-        for (int k = 0; k < 1; k++){
-            leds[strip][j + k] = CHSV(color, 255, 255 * intensity);  
+        for (int k = 0; k < 1; k++)
+        {
+          leds[strip][j + k] = CHSV(color, 255, 255 * intensity);
         }
       }
     }
@@ -255,10 +253,10 @@ void waveIntensity (int counter, int color){
 
   void percentageOne(int strip, float percentage, int color)
   {
-//    float percentage = p % 100;
+    //    float percentage = p % 100;
     for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
     {
-      if (j < (percentage/100) * NUM_PER_STRIP[strip])
+      if (j < (percentage / 100) * NUM_PER_STRIP[strip])
       {
         leds[strip][j] = CHSV(color, 255, 255);
       }
@@ -267,13 +265,13 @@ void waveIntensity (int counter, int color){
 
   int porcentaje(float percentage, int color)
   {
-//    percentage = percentage%100;
+    //    percentage = percentage%100;
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
       for (int j = 0; j < 10; j++)
       {
-        if (j < (percentage/100) * 10)
+        if (j < (percentage / 100) * 10)
         {
           leds[i][j] = CHSV(color, 255, 255);
         }
@@ -288,8 +286,9 @@ void waveIntensity (int counter, int color){
 
     for (int i = 0; i < NUM_STRIPS; i++)
     {
-      int progress = floor(counter/(NUM_STRIPS*NUM_PER_STRIP[i]));
-      if(i < progress){
+      int progress = floor(counter / (NUM_STRIPS * NUM_PER_STRIP[i]));
+      if (i < progress)
+      {
         percentageOne(i, counter, color);
       }
     }
@@ -309,50 +308,6 @@ void waveIntensity (int counter, int color){
   float modulo(float x, float y, float z)
   {
     return sqrt(x * x + y * y + z * z);
-  }
-
-  void simpleChangePaletteGyro(float yaw)
-  {
-    simpleColor(yaw);
-  }
-  void ChangePaletteGyro(float vector[])
-  {
-    float yaw = vector[0];
-    float pitch = vector[1];
-    float roll = vector[2];
-
-    if (pitch > 50 && roll < 45 && yaw > 45)
-    {
-      simpleColor(0);
-    }
-    if (pitch < 50 && roll < 45 && yaw > 45)
-    {
-      simpleColor(30);
-    }
-    if (pitch > 50 && roll < 45 && yaw > 45)
-    {
-      simpleColor(60);
-    }
-    if (pitch > 50 && roll < 45 && yaw < 45)
-    {
-      simpleColor(90);
-    }
-    if (pitch < 50 && roll > 45 && yaw > 45)
-    {
-      simpleColor(120);
-    }
-    if (pitch < 50 && roll < 45 && yaw < 45)
-    {
-      simpleColor(180);
-    }
-    if (pitch > 50 && roll > 45 && yaw < 45)
-    {
-      simpleColor(210);
-    }
-    if (pitch < 50 && roll > 45 && yaw < 45)
-    {
-      simpleColor(240);
-    }
   }
 
   float mapF(float value, float start1, float stop1, float start2, float stop2)
