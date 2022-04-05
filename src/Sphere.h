@@ -11,6 +11,7 @@ class Sphere
 {
 
 private:
+  String name;
   int NUM_PER_STRIP[19] = {300, 300, 300, 300, 300,
                            300, 300, 300, 300, 300,
                            300, 300, 300, 300, 300,
@@ -38,8 +39,9 @@ public:
   //      this->BRIGHTNESS = BRIGHTNESS;
   //    }
 
-  Sphere()
+  Sphere(String name)
   {
+    this->name = name;
     sum();
   }
 
