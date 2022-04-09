@@ -192,24 +192,27 @@ void loop()
     light.simpleColor(counter);
     break; // optional
   case 3:
-    light.danceFalf(counter * ex, 0, 180);
+    light.danceFalf(counter * ex, 0, hue);
     //    light.percentageAll(counter%100,50);
     break; // optional
   case 4:
-    light.danceFalf(counter  * ex, 10, 50);
+    light.danceFalf(counter  * ex, 10, hue);
     // light.percentageAll(counter, 70);
     break; // optional
   case 5:
-    light.partitionAll(counter* ex, 20, 100);
+    light.partitionAll(counter* ex, 20, hue);
     break; // optional
     case 6:
-    light.chaosAll(20,counter* ex,40,100);
+    light.chaosAll(sat,counter* ex,hue,100);
     break;
-    case 7:
-    light.busAll(20,counter* ex,60,100);
+  case 7:
+    light.busAll(sat,counter* ex,hue,100);
+    break;
+  case 8:
+    light.busAll(sat,-counter* ex,hue,100);
     break;
   default:
-    light.percentageAll(counter % 100, 50);
+    light.percentageAll((counter * ex) % 100, hue);
     break; // optional
   }
 }
