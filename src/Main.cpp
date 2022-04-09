@@ -8,12 +8,12 @@ Sphere light("Light");
 Helper document("Helper");
 MainServer accessPoint("accessPoint");
 int counter = 0;
-int anim = 0;
+int anim = 7;
 int hue = 0;
 int sat = 0;
 int val = 0;
 int ex = 0;
-int numAnim = 6;
+int numAnim = 10;
 unsigned long previousMillis = 0;
 const long interval = 300000;
 
@@ -205,6 +205,12 @@ void loop()
   case 5:
     light.partitionAll(counter, 20, 100);
     break; // optional
+    case 6:
+    light.chaosAll(5,counter,40,100);
+    break;
+    case 7:
+    light.busAll(5,counter,60,100);
+    break;
   default:
     light.percentageAll(counter % 100, 50);
     break; // optional

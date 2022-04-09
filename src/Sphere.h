@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <FastLED.h>
+#include <stdlib.h>
 
 #define LED_TYPE WS2812B
 #define PII 3.1415926535897932384626433832795
@@ -12,10 +13,17 @@ class Sphere
 
 private:
   String name;
-  int NUM_PER_STRIP[19] = {300, 300, 300, 300, 300,
-                           300, 300, 300, 300, 300,
-                           300, 300, 300, 300, 300,
-                           300, 300, 300, 300};
+ // int NUM_PER_STRIP[19] = {300, 300, 300, 300, 300,
+  //                         300, 300, 300, 300, 300,
+   //                        300, 300, 300, 300, 300,
+    //                       300, 300, 300, 300};
+
+int NUM_PER_STRIP[19] = {87, 115, 143, 170, 198,
+                           218, 237,252, 265, 276,
+                           275, 262, 246, 230, 205,
+                           180, 152, 70, 48};
+
+
   //
   //    int NUM_PER_STRIP[19] = {15, 15, 15, 15, 15,
   //                             15, 15, 15, 15, 15,
@@ -129,6 +137,7 @@ public:
   //   FastLED.show();
   // }
 
+
   void intensity(int hue, int intensity)
   {
     FastLED.clear();
@@ -141,6 +150,87 @@ public:
     }
     FastLED.show();
   }
+
+
+  void test(int increment)
+  {
+    FastLED.clear(); // actualizar frame
+    int offset = increment % 255;
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      int hue = map(i, 0, NUM_STRIPS, 0, 255);
+      for (int j = 0; j < NUM_PER_STRIP[i]; j++)
+      {
+        if(j%3==0)
+        {
+        leds[i][j] = CHSV((hue + offset) % 255, 255, 255);
+        }
+       
+      }
+    }
+    FastLED.show(); // mostrar frame
+  }
+  
+
+
+
+
+void chaosOne(int group, int increment, int color, int intensity,int strip)
+{
+  int offset = (increment/5)%NUM_PER_STRIP[strip]; 
+ for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+      {
+        if (j<group)
+        {
+        leds[strip][offset+j] = CHSV(color, 255, floor(255 * intensity / 100));
+        }
+        
+       
+      }
+}
+
+
+void chaosAll(int group, int increment, int color, int intensity)
+  {
+     FastLED.clear(); 
+ 
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+       chaosOne(group,increment,color,intensity,i);
+    }
+    FastLED.show();
+  }
+
+
+void busOne(int group, int increment, int color, int intensity,int strip)
+{
+  int offset = ((increment*NUM_PER_STRIP[strip]*2/(276))%NUM_PER_STRIP[strip]); 
+ for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+      {
+        if (j<group)
+        {
+        leds[strip][offset+j] = CHSV(color, 255, floor(255 * intensity / 100));
+        }
+        
+       
+      }
+}
+
+void busAll(int group, int increment, int color, int intensity)
+  {
+     FastLED.clear(); 
+  
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+       busOne(group,increment,color,intensity,i);
+    }
+    FastLED.show();
+  }
+
+
+
+
+
 
   void rainbow(int increment)
   {
