@@ -116,13 +116,13 @@ public:
     }
   }
 
-  void waveIntensity(int counter, int color)
+  void waveIntensity(int counter, int color, int vel)
   {
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
       float k = mapF(i, 0, NUM_STRIPS, 0, 2 * PI);
-      colorOne(i, color, floor(mapF(sin(k + 0.01 * counter), -1, 1, 0, 100)));
+      colorOne(i, color, floor(mapF(sin(k + 0.01 * vel * counter), -1, 1, 0, 100)));
     }
     FastLED.show();
   }
