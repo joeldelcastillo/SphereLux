@@ -206,10 +206,10 @@ void loop()
     light.partitionAll(counter, 20, 100);
     break; // optional
     case 6:
-    light.chaosAll(5,counter,40,100);
+    light.chaosAll(20,counter,40,100);
     break;
     case 7:
-    light.busAll(5,counter,60,100);
+    light.busAll(20,counter,60,100);
     break;
   default:
     light.percentageAll(counter % 100, 50);
