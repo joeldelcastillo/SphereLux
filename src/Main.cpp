@@ -34,7 +34,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
   <body>
     <div>
-      <input type="range" id="i0" min="0" max="100" value="0" step="5" />
+      <input type="range" id="i0" min="0" max="255" value="0" step="5" />
       <output id="o0"></output>
       <label for="i0">Hue</label>
     </div>
@@ -49,7 +49,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       <label for="i2">Val</label>
     </div>
     <div>
-      <input type="range" id="i3" min="0" max="100" value="0" step="5" />
+      <input type="range" id="i3" min="0" max="100" value="0" step="1" />
       <output id="o3"></output>
       <label for="i2">Ex</label>
     </div>
@@ -192,21 +192,21 @@ void loop()
     light.simpleColor(counter);
     break; // optional
   case 3:
-    light.danceFalf(counter * 20, 0, 180);
+    light.danceFalf(counter * ex, 0, 180);
     //    light.percentageAll(counter%100,50);
     break; // optional
   case 4:
-    light.danceFalf(counter, 10, 50);
+    light.danceFalf(counter  * ex, 10, 50);
     // light.percentageAll(counter, 70);
     break; // optional
   case 5:
-    light.partitionAll(counter, 20, 100);
+    light.partitionAll(counter* ex, 20, 100);
     break; // optional
     case 6:
-    light.chaosAll(20,counter,40,100);
+    light.chaosAll(20,counter* ex,40,100);
     break;
     case 7:
-    light.busAll(20,counter,60,100);
+    light.busAll(20,counter* ex,60,100);
     break;
   default:
     light.percentageAll(counter % 100, 50);
