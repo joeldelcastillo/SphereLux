@@ -22,7 +22,7 @@ AsyncWebServer server(80);
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE HTML><html>
 <head>
-  <title>ESP Web Server</title>
+  <title>Lux Sphere</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
   <style>
@@ -34,24 +34,24 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
   <body>
     <div>
-      <input type="range" id="i0" min="0" max="255" value="0" step="5" />
+      <input type="range" id="i0" min="0" max="100" value="0" step="5" />
       <output id="o0"></output>
-      <label for="">Hue</label>
+      <label for="i0">Hue</label>
     </div>
     <div>
-      <input type="range" id="i1" min="0" max="255" value="0" step="5" />
+      <input type="range" id="i1" min="0" max="100" value="0" step="5" />
       <output id="o1"></output>
-      <label for="">Sat</label>
+      <label for="i1">Sat</label>
     </div>
     <div>
-      <input type="range" id="i2" min="0" max="255" value="0" step="5" />
+      <input type="range" id="i2" min="0" max="100" value="0" step="5" />
       <output id="o2"></output>
-      <label for="">Val</label>
+      <label for="i2">Val</label>
     </div>
     <div>
       <input type="range" id="i3" min="0" max="100" value="0" step="5" />
       <output id="o3"></output>
-      <label for="">Ex</label>
+      <label for="i2">Ex</label>
     </div>
     <script>
       let i0 = document.getElementById("i0");
@@ -59,6 +59,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       o0.innerHTML = i0.value;
       i0.addEventListener(
         "input",
+
         function () {
           var xhr = new XMLHttpRequest();
           o0.innerHTML = i0.value;
@@ -70,15 +71,15 @@ const char index_html[] PROGMEM = R"rawliteral(
     </script>
 
     <script>
-      let i1 = document.querySelector("i1");
-      let o1 = document.querySelector("o1");
+      let i1 = document.getElementById("i1");
+      let o1 = document.getElementById("o1");
       o1.innerHTML = i1.value;
       i1.addEventListener(
         "input",
         function () {
           var xhr = new XMLHttpRequest();
           o1.innerHTML = i1.value;
-          xhr.open("GET", "/b0?sat=" + i1.value, true);
+          xhr.open("GET", "/b1?sat=" + i1.value, true);
           xhr.send();
         },
         false
@@ -86,15 +87,15 @@ const char index_html[] PROGMEM = R"rawliteral(
     </script>
 
     <script>
-      let i2 = document.querySelector("i2");
-      let o2 = document.querySelector("o2");
+      let i2 = document.getElementById("i2");
+      let o2 = document.getElementById("o2");
       o2.innerHTML = i2.value;
       i2.addEventListener(
         "input",
         function () {
           var xhr = new XMLHttpRequest();
           o2.innerHTML = i2.value;
-          xhr.open("GET", "/b0?val=" + i2.value, true);
+          xhr.open("GET", "/b2?val=" + i2.value, true);
           xhr.send();
         },
         false
@@ -102,15 +103,15 @@ const char index_html[] PROGMEM = R"rawliteral(
     </script>
 
     <script>
-      let i3 = document.querySelector("i2");
-      let o3 = document.querySelector("o2");
+      let i3 = document.getElementById("i3");
+      let o3 = document.getElementById("o3");
       o3.innerHTML = i3.value;
       i3.addEventListener(
         "input",
         function () {
           var xhr = new XMLHttpRequest();
           o3.innerHTML = i3.value;
-          xhr.open("GET", "/b0?ex=" + i3.value, true);
+          xhr.open("GET", "/b3?ex=" + i3.value, true);
           xhr.send();
         },
         false
@@ -129,44 +130,40 @@ void setup()
   server.on("/lux", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/html", index_html); });
 
+  server.on("/ch", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String animS = request->getParam("anim")->value();
+              anim = animS.toInt();
+              Serial.println(anim);
+              request->send_P(200, "text/plain", "bien bro"); });
+
   server.on("/b0", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              if (request->hasParam("anim"))
-              {
-                // Valor de error
-                String animS = request->getParam("anim")->value();
-                anim = animS.toInt();
-                Serial.println(anim);
-                request->send_P(200, "text/html", "bien bro");
-              }
+              String hueS = request->getParam("hue")->value();
+              hue = hueS.toInt();
+              Serial.println(hue);
+              request->send_P(200, "text/plain", "bien bro"); });
 
-              else if (request->hasParam("hue"))
-              {
-                // Valor de error
-                String hueS = request->getParam("hue")->value();
-                hue = hueS.toInt();
-                Serial.println(hue);
-                request->send_P(200, "text/html", "bien bro");
-              }
+  server.on("/b1", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String satS = request->getParam("sat")->value();
+              sat = satS.toInt();
+              Serial.println(sat);
+              request->send_P(200, "text/plain", "bien bro"); });
 
-              else if (request->hasParam("sat"))
-              {
-                // Valor de error
-                String satS = request->getParam("sat")->value();
-                sat = satS.toInt();
-                Serial.println(sat);
-                request->send_P(200, "text/html", "bien bro");
-              }
+  server.on("/b2", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String valS = request->getParam("val")->value();
+              val = valS.toInt();
+              Serial.println(val);
+              request->send_P(200, "text/plain", "bien bro"); });
 
-              else if (request->hasParam("ex"))
-              {
-                // Valor de error
-                String exS = request->getParam("ex")->value();
-                ex = exS.toInt();
-                Serial.println(hue);
-                request->send_P(200, "text/html", "bien bro");
-              } });
-
+  server.on("/b3", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String exS = request->getParam("ex")->value();
+              ex = exS.toInt();
+              Serial.println(ex);
+              request->send_P(200, "text/plain", "bien bro"); });
   // Start server
   server.begin();
 }
@@ -186,7 +183,7 @@ void loop()
   switch (anim)
   {
   case 0:
-    light.waveIntensity(counter, hue);
+    light.waveIntensity(counter, hue, ex);
     break; // optional
   case 1:
     light.rainbow(counter);
