@@ -18,17 +18,17 @@ private:
    //                        300, 300, 300, 300, 300,
     //                       300, 300, 300, 300};
 
-int NUM_PER_STRIP[19] = {87, 115, 143, 170, 198,
-                           218, 237,252, 265, 276,
-                           275, 262, 246, 230, 205,
-                           177, 149, 116, 78};
+//int NUM_PER_STRIP[19] = {87, 115, 143, 170, 198,
+//                           218, 237,252, 265, 276,
+//                          275, 262, 246, 230, 205,
+//                           177, 149, 116, 78};
 
 
-  //
-  //    int NUM_PER_STRIP[19] = {15, 15, 15, 15, 15,
-  //                             15, 15, 15, 15, 15,
-  //                             15, 15, 15, 15, 15,
-  //                             15, 15, 15, 15};
+  
+      int NUM_PER_STRIP[19] = {15, 15, 15, 15, 15,
+                               15, 15, 15, 15, 15,
+                               15, 15, 15, 15, 15,
+                               15, 15, 15, 15};
 
   int Total_LEDS;
   int NUM_STRIPS = 19;
@@ -227,6 +227,111 @@ void busAll(int group, int increment, int color, int intensity)
     FastLED.show();
   }
 
+
+
+  void exp(int increment,int color)
+  {
+    FastLED.clear(); // actualizar frame
+    int offset = increment/30% 60;
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+     if(offset<15)
+     {
+     for (int j = 0; j < offset; j++)//all off, on to the right  
+      {
+         leds[i][j] = CHSV(color, 255, 255);  
+      }     
+     
+     }
+     else if (offset<30)
+     {
+     
+      for (int j = 0; j < NUM_PER_STRIP[i]-(offset-15); j++)//all on, off to the left  
+      {
+         leds[i][j] = CHSV(color, 255, 255);  
+      }
+    }
+      else if (offset<45)
+    {
+    for (int j = NUM_PER_STRIP[i]-(offset-30); j < NUM_PER_STRIP[i]; j++)// all off, on to the left 
+     {
+         leds[i][j] = CHSV(color, 255, 255);  
+      }
+    }
+    else
+    {
+       for (int j = (offset-45); j < NUM_PER_STRIP[i]; j++)//all on, off to the right  
+        {
+         leds[i][j] = CHSV(color, 255, 255);  
+      }
+    }
+
+
+//Base
+       //  for (int j = 0; j < NUM_PER_STRIP[i]-offset; j++)//all on, off to the left  
+       //for (int j = offset; j < NUM_PER_STRIP[i]; j++)//all on, off to the right  
+      //for (int j = NUM_PER_STRIP[i]-offset; j < NUM_PER_STRIP[i]; j++)// all off, on to the left 
+      // for (int j = 0; j < offset; j++)//all off, on to the right  
+   
+    }
+    FastLED.show(); // mostrar frame
+  }
+  
+
+
+
+void tetraStateOneA(int strip, int increment, int color, int intensity)
+{
+  //276 es el máximo numero de leds por strip
+  //2 es una escala de velocidad
+  //int offset=276*5000*(increment*NUM_PER_STRIP[strip]/276) % NUM_PER_STRIP[strip];
+    //int offset = (increment/50000) % NUM_PER_STRIP[strip];
+    int offset = ((increment*NUM_PER_STRIP[strip]*2/(276))%NUM_PER_STRIP[strip]); 
+   
+//se encienden todas en un sentido (antihorario)
+  for (int j=0;j<NUM_PER_STRIP[strip]; j++)
+  {
+    if (j>offset)
+   {
+        leds[strip][offset+j] = CHSV(color, 255, floor(255 * intensity / 100));
+    
+   }
+  }
+}
+
+void tetraStateOneB(int strip, int increment, int color, int intensity)
+{
+  //276 es el máximo numero de leds por strip
+  //2 es una escala de velocidad
+  int offset=276*8000*(increment*NUM_PER_STRIP[strip]/276)%NUM_PER_STRIP[strip];
+//se apagan todas en un sentido (horario)
+
+//int offset = ((increment*NUM_PER_STRIP[strip]*2/(276))%NUM_PER_STRIP[strip]); 
+ for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+      {
+        if (j<NUM_PER_STRIP[strip])
+        {
+        leds[strip][offset+j] = CHSV(color, 255, floor(255 * intensity / 100));
+        }
+        
+       
+      }
+}
+
+
+
+void tetraStateAll(int increment, int color, int intensity)
+  {
+     FastLED.clear(); 
+  
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      
+       tetraStateOneA(i,increment,color,intensity);
+ 
+    }
+    FastLED.show();
+  }
 
 
 
