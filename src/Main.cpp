@@ -8,12 +8,12 @@ Sphere light("Light");
 Helper document("Helper");
 MainServer accessPoint("accessPoint");
 int counter = 0;
-int anim = 0;
-int hue = 0;
-int sat = 0;
+int anim = 9;
+int hue = 40;
+int sat = 100;
 int val = 0;
-int ex = 0;
-int numAnim = 6;
+int ex = 1;
+int numAnim = 10;
 unsigned long previousMillis = 0;
 const long interval = 300000;
 
@@ -34,7 +34,7 @@ const char index_html[] PROGMEM = R"rawliteral(
 </head>
   <body>
     <div>
-      <input type="range" id="i0" min="0" max="100" value="0" step="5" />
+      <input type="range" id="i0" min="0" max="255" value="0" step="5" />
       <output id="o0"></output>
       <label for="i0">Hue</label>
     </div>
@@ -49,7 +49,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       <label for="i2">Val</label>
     </div>
     <div>
-      <input type="range" id="i3" min="0" max="100" value="0" step="5" />
+      <input type="range" id="i3" min="0" max="100" value="0" step="1" />
       <output id="o3"></output>
       <label for="i2">Ex</label>
     </div>
@@ -192,18 +192,31 @@ void loop()
     light.simpleColor(counter);
     break; // optional
   case 3:
-    light.danceFalf(counter * 20, 0, 180);
+    light.danceFalf(counter * ex, 0, hue);
     //    light.percentageAll(counter%100,50);
     break; // optional
   case 4:
-    light.danceFalf(counter, 10, 50);
+    light.danceFalf(counter  * ex, 10, hue);
     // light.percentageAll(counter, 70);
     break; // optional
   case 5:
-    light.partitionAll(counter, 20, 100);
+    light.partitionAll(counter* ex, 4, hue);
     break; // optional
+    case 6:
+    light.chaosAll(sat,counter* ex,hue,100);
+    break;
+  case 7:
+    light.busAll(15,counter* ex,hue,100);
+    break;
+  case 8:
+    light.busAll(sat,-counter* ex,hue,100);
+    break;
+  case 9:
+ 
+    light.exp(counter,hue);
+    break;
   default:
-    light.percentageAll(counter % 100, 50);
+    light.percentageAll((counter * ex) % 100, hue);
     break; // optional
   }
 }
