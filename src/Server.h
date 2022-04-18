@@ -9,9 +9,8 @@ class MainServer
 {
 
 private:
-  const char *ssid = "ESP32";
+  const char *ssid = "LuxSphere";
   const char *password = "123456789";
-  const String severName1 = "http://192.168.4.1/counter";
   String serverName = "";
   float artistas[5][4] = {
       {0.0, 0.0, 0.0, 0.0},
@@ -34,11 +33,16 @@ public:
     // Setting the ESP as an access point
     Serial.print("Setting AP (Access Point)…");
     // Remove the password parameter, if you want the AP (Access Point) to be open
-    WiFi.softAP(ssid, password);
-
-    IPAddress IP = WiFi.softAPIP();
-    Serial.print("AP IP address: ");
-    Serial.println(IP);
+    // WiFi.softAP(ssid, password);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      delay(1000);
+      Serial.println("Connecting to WiFi..");
+    }
+    // IPAddress IP = WiFi.softAPIP();
+    // Serial.print("AP IP address: ");
+    // Serial.println(IP);
   }
 
   float getArtista(int artista, int var)

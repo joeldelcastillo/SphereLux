@@ -6,7 +6,6 @@
 #include <stdlib.h>
 
 #define LED_TYPE WS2812B
-#define PII 3.1415926535897932384626433832795
 
 class Sphere
 {

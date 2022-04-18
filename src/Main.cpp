@@ -8,7 +8,7 @@ Sphere light("Light");
 Helper document("Helper");
 MainServer accessPoint("accessPoint");
 int counter = 0;
-int anim = 7;
+int anim = 0;
 int hue = 0;
 int sat = 0;
 int val = 0;
@@ -196,20 +196,20 @@ void loop()
     //    light.percentageAll(counter%100,50);
     break; // optional
   case 4:
-    light.danceFalf(counter  * ex, 10, hue);
+    light.danceFalf(counter * ex, 10, hue);
     // light.percentageAll(counter, 70);
     break; // optional
   case 5:
-    light.partitionAll(counter* ex, 20, hue);
+    light.partitionAll(counter * ex, 20, hue);
     break; // optional
-    case 6:
-    light.chaosAll(sat,counter* ex,hue,100);
+  case 6:
+    light.chaosAll(sat, counter * ex, hue, 100);
     break;
   case 7:
-    light.busAll(sat,counter* ex,hue,100);
+    light.busAll(sat, counter * ex, hue, 100);
     break;
   case 8:
-    light.busAll(sat,-counter* ex,hue,100);
+    light.busAll(sat, -counter * ex, hue, 100);
     break;
   default:
     light.percentageAll((counter * ex) % 100, hue);
