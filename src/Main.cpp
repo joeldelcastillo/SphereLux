@@ -14,6 +14,8 @@ int sat = 0;
 int val = 0;
 int ex = 0;
 int numAnim = 10;
+int lastStationNum = 0;
+bool isPrinted = false;
 unsigned long previousMillis = 0;
 const long interval = 300000;
 
@@ -103,7 +105,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o0 = document.getElementById("o0");
       o0.innerHTML = i0.value;
       i0.addEventListener(
-        "input",
+        "change",
 
         function () {
           var xhr = new XMLHttpRequest();
@@ -120,7 +122,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o1 = document.getElementById("o1");
       o1.innerHTML = i1.value;
       i1.addEventListener(
-        "input",
+        "change",
         function () {
           var xhr = new XMLHttpRequest();
           o1.innerHTML = i1.value;
@@ -136,7 +138,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o2 = document.getElementById("o2");
       o2.innerHTML = i2.value;
       i2.addEventListener(
-        "input",
+        "change",
         function () {
           var xhr = new XMLHttpRequest();
           o2.innerHTML = i2.value;
@@ -152,7 +154,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o3 = document.getElementById("o3");
       o3.innerHTML = i3.value;
       i3.addEventListener(
-        "input",
+        "change",
         function () {
           var xhr = new XMLHttpRequest();
           o3.innerHTML = i3.value;
@@ -176,6 +178,7 @@ const char index_html[] PROGMEM = R"rawliteral(
     <script>
       function heap() {
         var xhr = new XMLHttpRequest();
+        alert("Estas seguro que quieres borrar el heap?")
           xhr.open("GET", "/heap", true);
           xhr.send();
         console.log("heap");
@@ -185,9 +188,9 @@ const char index_html[] PROGMEM = R"rawliteral(
     <script>
       function reset() {
         var xhr = new XMLHttpRequest();
+        alert("Estas seguro que quieres resetear?")
           xhr.open("GET", "/reset", true);
           xhr.send();
-        alert("Estas seguro que quieres resetear?")
         console.log("reset");
       }
     </script>
@@ -195,20 +198,20 @@ const char index_html[] PROGMEM = R"rawliteral(
 </html>
 )rawliteral";
 
+void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventType type, void *arg, uint8_t *data, size_t len)
+{
 
-void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
-
-  if(type == WS_EVT_CONNECT){
+  if (type == WS_EVT_CONNECT)
+  {
 
     Serial.println("Websocket client connection received");
     client->text("Hello from ESP32 Server");
-
-  } else if(type == WS_EVT_DISCONNECT){
+  }
+  else if (type == WS_EVT_DISCONNECT)
+  {
     Serial.println("Client disconnected");
-
   }
 }
-
 
 void setup()
 {
@@ -254,21 +257,20 @@ void setup()
               Serial.println(ex);
               request->send_P(200, "text/plain", "bien bro"); });
 
-  server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
-    request->send(200, "text/plain", String(ESP.getFreeHeap()));
-  });
-  server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request){
+  server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request)
+            { request->send(200, "text/plain", String(ESP.getFreeHeap())); 
+                Serial.println("Heap cleared"); });
+  server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
     request->send(200,"text/plain","ok");
     delay(1000);
-    ESP.restart();
-    });
+    ESP.restart(); });
   // Start server
-  
+
   ws.onEvent(onWsEvent);
   server.addHandler(&ws);
   server.begin();
 }
-
 
 void loop()
 {
@@ -279,6 +281,10 @@ void loop()
   {
     anim = (anim + 1) % numAnim;
     previousMillis = currentMillis;
+    if (WiFi.softAPgetStationNum() == 0)
+    {
+      Serial.printf("Stations connected to soft-AP = %d\n", WiFi.softAPgetStationNum());
+    }
   }
 
   counter++;
@@ -288,10 +294,10 @@ void loop()
     light.waveIntensity(counter, hue, ex);
     break; // optional
   case 1:
-    light.rainbow(counter);
+    light.percentageAll((counter * ex) % 100, hue);
     break; // optional
   case 2:
-    light.simpleColor(counter);
+    light.simpleColor(hue);
     break; // optional
   case 3:
     light.danceFalf(counter * ex, 1, hue);
@@ -316,5 +322,19 @@ void loop()
   default:
     light.percentageAll((counter * ex) % 100, hue);
     break; // optional
+  }
+  if (WiFi.softAPgetStationNum() > 0 && isPrinted == false)
+  {
+    lastStationNum = WiFi.softAPgetStationNum();
+    Serial.printf("Stations connected to soft-AP = %d\n", WiFi.softAPgetStationNum());
+    isPrinted = true;
+  }
+
+  if (lastStationNum > WiFi.softAPgetStationNum() && isPrinted == true)
+  {
+    Serial.println("Station Disconected");
+    isPrinted = false;
+    ESP.getFreeHeap();
+    ESP.restart();
   }
 }

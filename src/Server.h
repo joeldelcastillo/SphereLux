@@ -33,16 +33,16 @@ public:
     // Setting the ESP as an access point
     Serial.print("Setting AP (Access Point)…");
     // Remove the password parameter, if you want the AP (Access Point) to be open
-    // WiFi.softAP(ssid, password);
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED)
-    {
-      delay(1000);
-      Serial.println("Connecting to WiFi..");
-    }
-    // IPAddress IP = WiFi.softAPIP();
-    // Serial.print("AP IP address: ");
-    // Serial.println(IP);
+    WiFi.softAP(ssid, password);
+    // WiFi.begin(ssid, password);
+    // while (WiFi.status() != WL_CONNECTED)
+    // {
+    //   delay(1000);
+    //   Serial.println("Connecting to WiFi..");
+    // }
+    IPAddress IP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(IP);
   }
 
   float getArtista(int artista, int var)
