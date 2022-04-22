@@ -18,41 +18,86 @@ unsigned long previousMillis = 0;
 const long interval = 300000;
 
 AsyncWebServer server(80);
+AsyncWebSocket ws("/ws");
 
 const char index_html[] PROGMEM = R"rawliteral(
-<!DOCTYPE HTML><html>
-<head>
-  <title>Lux Sphere</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" href="data:,">
-  <style>
-    html {font-family: Arial; display: inline-block; text-align: center;}
-    h2 {font-size: 3.0rem;}
-    p {font-size: 3.0rem;}
-    body {margin:0px auto; padding-bottom: 25px;}
-  </style>
-</head>
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Lux Sphere</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <style>
+      html {
+        font-family: Arial;
+        display: inline-block;
+        text-align: center;
+        padding: 10px;
+      }
+      h2 {
+        font-size: 3rem;
+      }
+      p {
+        font-size: 3rem;
+      }
+      body {
+        margin: 0px auto;
+        padding-bottom: 25px;
+      }
+      input[type="range"] {
+        width: 80%;
+        padding: 20px 0;
+      }
+    </style>
+  </head>
   <body>
+    <label for="i0">Hue</label>
     <div>
-      <input type="range" id="i0" min="0" max="255" value="0" step="5" />
+      <input type="range" id="i0" min="1" max="255" value="0" step="5" />
       <output id="o0"></output>
-      <label for="i0">Hue</label>
     </div>
+    <label for="i1">Sat</label>
     <div>
-      <input type="range" id="i1" min="0" max="100" value="0" step="5" />
+      <input type="range" id="i1" min="1" max="100" value="0" step="5" />
       <output id="o1"></output>
-      <label for="i1">Sat</label>
     </div>
+    <label for="i2">Val</label>
     <div>
-      <input type="range" id="i2" min="0" max="100" value="0" step="5" />
+      <input type="range" id="i2" min="1" max="100" value="0" step="5" />
       <output id="o2"></output>
-      <label for="i2">Val</label>
     </div>
+    <label for="i2">Ex</label>
     <div>
-      <input type="range" id="i3" min="0" max="100" value="0" step="1" />
+      <input type="range" id="i3" min="1" max="100" value="0" step="1" />
       <output id="o3"></output>
-      <label for="i2">Ex</label>
     </div>
+
+    <br>
+
+    <select id="comboA" onchange="getComboA(this)">
+      <option value="">Animations</option>
+      <option value="0">0</option>
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3">3</option>
+      <option value="4">4</option>
+      <option value="5">5</option>
+      <option value="6">6</option>
+      <option value="7">7</option>
+      <option value="8">8</option>
+      <option value="9">9</option>
+    </select>
+
+    <br>
+    <br>
+
+    <button onclick="heap()">Clear Heap</button>
+
+    <br>
+    <br>
+    
+    <button onclick="reset()">Reset</button>
+
     <script>
       let i0 = document.getElementById("i0");
       let o0 = document.getElementById("o0");
@@ -117,9 +162,53 @@ const char index_html[] PROGMEM = R"rawliteral(
         false
       );
     </script>
+
+    <script>
+      function getComboA(selectObject) {
+        var value = selectObject.value;
+        console.log(value);
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/ch?anim=" + value, true);
+        xhr.send();
+      }
+    </script>
+
+    <script>
+      function heap() {
+        var xhr = new XMLHttpRequest();
+          xhr.open("GET", "/heap", true);
+          xhr.send();
+        console.log("heap");
+      }
+    </script>
+
+    <script>
+      function reset() {
+        var xhr = new XMLHttpRequest();
+          xhr.open("GET", "/reset", true);
+          xhr.send();
+        alert("Estas seguro que quieres resetear?")
+        console.log("reset");
+      }
+    </script>
   </body>
 </html>
 )rawliteral";
+
+
+void onWsEvent(AsyncWebSocket * server, AsyncWebSocketClient * client, AwsEventType type, void * arg, uint8_t *data, size_t len){
+
+  if(type == WS_EVT_CONNECT){
+
+    Serial.println("Websocket client connection received");
+    client->text("Hello from ESP32 Server");
+
+  } else if(type == WS_EVT_DISCONNECT){
+    Serial.println("Client disconnected");
+
+  }
+}
+
 
 void setup()
 {
@@ -164,9 +253,22 @@ void setup()
               ex = exS.toInt();
               Serial.println(ex);
               request->send_P(200, "text/plain", "bien bro"); });
+
+  server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", String(ESP.getFreeHeap()));
+  });
+  server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200,"text/plain","ok");
+    delay(1000);
+    ESP.restart();
+    });
   // Start server
+  
+  ws.onEvent(onWsEvent);
+  server.addHandler(&ws);
   server.begin();
 }
+
 
 void loop()
 {
@@ -192,7 +294,7 @@ void loop()
     light.simpleColor(counter);
     break; // optional
   case 3:
-    light.danceFalf(counter * ex, 0, hue);
+    light.danceFalf(counter * ex, 1, hue);
     //    light.percentageAll(counter%100,50);
     break; // optional
   case 4:
