@@ -12,6 +12,7 @@ int anim = 0;
 int hue = 0;
 int sat = 0;
 int val = 0;
+int vel = 0;
 int ex = 0;
 int numAnim = 10;
 int lastStationNum = 0;
@@ -20,7 +21,7 @@ unsigned long previousMillis = 0;
 const long interval = 300000;
 
 AsyncWebServer server(80);
-AsyncWebSocket ws("/ws");
+// AsyncWebSocket ws("/ws");
 
 const char index_html[] PROGMEM = R"rawliteral(
 <!DOCTYPE html>
@@ -68,10 +69,15 @@ const char index_html[] PROGMEM = R"rawliteral(
       <input type="range" id="i2" min="1" max="100" value="0" step="5" />
       <output id="o2"></output>
     </div>
-    <label for="i2">Ex</label>
+    <label for="i2">Vel</label>
     <div>
       <input type="range" id="i3" min="1" max="100" value="0" step="1" />
       <output id="o3"></output>
+    </div>
+    <label for="i2">Ex</label>
+    <div>
+      <input type="range" id="i4" min="1" max="100" value="0" step="1" />
+      <output id="o4"></output>
     </div>
 
     <br>
@@ -158,7 +164,23 @@ const char index_html[] PROGMEM = R"rawliteral(
         function () {
           var xhr = new XMLHttpRequest();
           o3.innerHTML = i3.value;
-          xhr.open("GET", "/b3?ex=" + i3.value, true);
+          xhr.open("GET", "/b3?vel=" + i3.value, true);
+          xhr.send();
+        },
+        false
+      );
+    </script>
+
+    <script>
+      let i4 = document.getElementById("i4");
+      let o4 = document.getElementById("o4");
+      o4.innerHTML = i4.value;
+      i4.addEventListener(
+        "change",
+        function () {
+          var xhr = new XMLHttpRequest();
+          o4.innerHTML = i4.value;
+          xhr.open("GET", "/b4?ex=" + i4.value, true);
           xhr.send();
         },
         false
@@ -252,6 +274,13 @@ void setup()
 
   server.on("/b3", HTTP_GET, [](AsyncWebServerRequest *request)
             {
+            String velS = request->getParam("vel")->value();
+            vel = velS.toInt();
+            Serial.println(vel);
+            request->send_P(200, "text/plain", "bien bro"); });
+
+  server.on("/b4", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
               String exS = request->getParam("ex")->value();
               ex = exS.toInt();
               Serial.println(ex);
@@ -267,8 +296,8 @@ void setup()
     ESP.restart(); });
   // Start server
 
-  ws.onEvent(onWsEvent);
-  server.addHandler(&ws);
+  // ws.onEvent(onWsEvent);
+  // server.addHandler(&ws);
   server.begin();
 }
 
