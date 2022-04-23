@@ -321,24 +321,22 @@ void loop()
   {
   case 0:
     light.waveIntensity(counter, hue, ex);
-    break; // optional
+    break;
   case 1:
     light.percentageAll((counter * ex) % 100, hue);
-    break; // optional
+    break;
   case 2:
     light.simpleColor(hue);
-    break; // optional
+    break;
   case 3:
     light.danceFalf(counter * ex, 1, hue);
-    //    light.percentageAll(counter%100,50);
-    break; // optional
+    break;
   case 4:
     light.danceFalf(counter * ex, 10, hue);
-    // light.percentageAll(counter, 70);
-    break; // optional
+    break;
   case 5:
     light.partitionAll(counter * ex, 20, hue);
-    break; // optional
+    break;
   case 6:
     light.chaosAll(sat, counter * ex, hue, 100);
     break;
@@ -350,7 +348,7 @@ void loop()
     break;
   default:
     light.percentageAll((counter * ex) % 100, hue);
-    break; // optional
+    break;
   }
   if (WiFi.softAPgetStationNum() > 0 && isPrinted == false)
   {

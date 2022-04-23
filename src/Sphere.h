@@ -31,6 +31,7 @@ private:
   int Total_LEDS;
   int NUM_STRIPS = 19;
   int BRIGHTNESS = 50;
+  int MAX_LED = 0;
   CRGBPalette16 currentPalette;
   TBlendType currentBlending;
   // extern CRGBPalette16 myRedWhiteBluePalette;
@@ -48,6 +49,13 @@ public:
   Sphere(String name)
   {
     this->name = name;
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      if (NUM_PER_STRIP[i] > MAX_LED)
+      {
+        MAX_LED = NUM_PER_STRIP[i];
+      }
+    }
     sum();
   }
 
@@ -93,39 +101,39 @@ public:
     FastLED.setBrightness(BRIGHTNESS);
   }
 
-  void simpleColor(int hue)
+  void simpleColor(int hue, int sat, int val)
   {
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
       for (int j = 0; j < NUM_PER_STRIP[i]; j++)
       {
-        leds[i][j] = CHSV(hue, 255, 255);
+        leds[i][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
       }
     }
     FastLED.show();
   }
 
-  void colorOne(int strip, int color, int intensity)
+  void colorOne(int strip, int hue, int sat, int val)
   {
     for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
     {
-      leds[strip][j] = CHSV(color, 255, floor(255 * intensity / 100));
+      leds[i][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
     }
   }
 
-  void waveIntensity(int counter, int color, int vel)
+  void waveVal(int counter, int hue, int vel)
   {
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
       float k = mapF(i, 0, NUM_STRIPS, 0, 2 * PI);
-      colorOne(i, color, floor(mapF(sin(k + 0.01 * vel * counter), -1, 1, 0, 100)));
+      colorOne(i, hue, floor(mapF(sin(k + 0.01 * vel * counter), -1, 1, 0, 100)), floor(255 * val / 100));
     }
     FastLED.show();
   }
 
-  // void waveIntensity (int counter, int color){
+  // void waveVal (int counter, int color){
   //  FastLED.clear();
   //   for (int i = 0; i < NUM_STRIPS; i++)
   //     {
@@ -134,83 +142,6 @@ public:
   //     }
   //   FastLED.show();
   // }
-
-  void intensity(int hue, int intensity)
-  {
-    FastLED.clear();
-    for (int i = 0; i < NUM_STRIPS; i++)
-    {
-      for (int j = 0; j < NUM_PER_STRIP[i]; j++)
-      {
-        leds[i][j] = CHSV(hue, 255, 255 * (intensity / 100));
-      }
-    }
-    FastLED.show();
-  }
-
-  void test(int increment)
-  {
-    FastLED.clear(); // actualizar frame
-    int offset = increment % 255;
-    for (int i = 0; i < NUM_STRIPS; i++)
-    {
-      int hue = map(i, 0, NUM_STRIPS, 0, 255);
-      for (int j = 0; j < NUM_PER_STRIP[i]; j++)
-      {
-        if (j % 3 == 0)
-        {
-          leds[i][j] = CHSV((hue + offset) % 255, 255, 255);
-        }
-      }
-    }
-    FastLED.show(); // mostrar frame
-  }
-
-  void chaosOne(int group, int increment, int color, int intensity, int strip)
-  {
-    int offset = (increment / 5) % NUM_PER_STRIP[strip];
-    for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
-    {
-      if (j < group)
-      {
-        leds[strip][offset + j] = CHSV(color, 255, floor(255 * intensity / 100));
-      }
-    }
-  }
-
-  void chaosAll(int group, int increment, int color, int intensity)
-  {
-    FastLED.clear();
-
-    for (int i = 0; i < NUM_STRIPS; i++)
-    {
-      chaosOne(group, increment, color, intensity, i);
-    }
-    FastLED.show();
-  }
-
-  void busOne(int group, int increment, int color, int intensity, int strip)
-  {
-    int offset = ((increment * NUM_PER_STRIP[strip] * 2 / (276)) % NUM_PER_STRIP[strip]);
-    for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
-    {
-      if (j < group)
-      {
-        leds[strip][offset + j] = CHSV(color, 255, floor(255 * intensity / 100));
-      }
-    }
-  }
-
-  void busAll(int group, int increment, int color, int intensity)
-  {
-    FastLED.clear();
-
-    for (int i = 0; i < NUM_STRIPS; i++)
-    {
-      busOne(group, increment, color, intensity, i);
-    }
-    FastLED.show();
-  }
 
   void rainbow(int increment)
   {
@@ -227,7 +158,7 @@ public:
     FastLED.show();
   }
 
-  void partitionOne(int strip, int parts, int intensity, int color)
+  void partitionOne(int strip, int hue, int sat, int val, int size, int parts)
   {
     int l = NUM_PER_STRIP[strip];
     int ratio = round(l / parts);
@@ -235,73 +166,45 @@ public:
     {
       if (j % ratio == 0)
       {
-        for (int k = 0; k < 20; k++)
+        for (int k = 0; k < size; k++)
         {
-          leds[strip][j + k] = CHSV(color, 255, 255 * intensity);
+          leds[strip][j + k] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
         }
       }
     }
   }
 
-  void partitionAll(int count, int parts, int color)
+  void partitionAll(int counter, int hue, int sat, int val, int size, int parts)
   {
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
-      int yoff = (i + count) % NUM_STRIPS;
+      int yoff = (i + counter) % NUM_STRIPS;
       if (i < NUM_STRIPS / 2)
       {
-        partitionOne(yoff, 5, 1, color);
+        partitionOne(yoff, hue, sat, val, size, parts);
       }
       else
       {
-        partitionOne(yoff, 5, 0.4, color);
+        partitionOne(yoff, hue, sat, val, size, parts);
       }
-    }
-
-    FastLED.show();
-  }
-
-  void fadeOne(int strip, int center, int color)
-  {
-    int len = NUM_PER_STRIP[strip];
-    float newCenter = (center % len);
-    for (int j = 0; j < len; j++)
-    {
-      float distance;
-
-      if ((newCenter - j) > len * 0.5)
-      {
-        distance = abs(newCenter - (j + len));
-      }
-      else if ((newCenter - j) < -(len * 0.5))
-      {
-        distance = abs(newCenter - j + len);
-      }
-      else
-      {
-        distance = abs(newCenter - j);
-      }
-
-      float grad = 1 - (distance / len) * 4;
-      int atenuacion = mapF(grad, 0, 1, 0, 255);
-      // console.log(col);
-      leds[strip][j] = CHSV(color, 255, atenuacion);
-    }
-  }
-
-  void fadeAll(float center, int color)
-  {
-    FastLED.clear();
-    // int offset = increment % 255;
-    for (int i = 0; i < NUM_STRIPS; i++)
-    {
-      fadeOne(i, center, color);
     }
     FastLED.show();
   }
 
-  void danceFalf(int counter, int ratio, int color)
+  void halfLeds(int strip, int counter, int hue, int sat, int val)
+  {
+    for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+    {
+      if (j < NUM_PER_STRIP[strip] / 2)
+      {
+        int xoff = (j + counter) % NUM_PER_STRIP[strip];
+        leds[strip][xoff] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+      }
+    }
+  }
+
+  void danceFalf(int counter, int hue, int sat, int val, int ratio)
   {
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
@@ -311,82 +214,216 @@ public:
     FastLED.show();
   }
 
-  void halfLeds(int strip, int counter, int color)
+  //----------------- 4/23/2022
+
+  // Se encienden en sentido antihorario todos los LEDs de la esfera
+  void fillAnticlock(int strip, int offset, int hue, int sat, int val)
   {
-    for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+    for (int j = 0; j < offset; j++)
     {
-      if (j < NUM_PER_STRIP[strip] / 2)
-      {
-        int xoff = (j + counter) % NUM_PER_STRIP[strip];
-        leds[strip][xoff] = CHSV(color, 255, 255);
-      }
+      leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
     }
   }
 
-  void percentageOne(int strip, float percentage, int color)
+  // Se encienden en sentido horario todos los LEDs de la esfera
+  void fillClock(int strip, int offset, int hue, int sat, int val)
   {
-    //    float percentage = p % 100;
-    for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+    for (int j = NUM_PER_STRIP[strip] - offset; j < NUM_PER_STRIP[strip]; j++)
     {
-      if (j < (percentage / 100) * NUM_PER_STRIP[strip])
-      {
-        leds[strip][j] = CHSV(color, 255, 255);
-      }
+      leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+    }
+  }
+  // Se apagan en sentido antihorario todos los LEDs de la esfera
+  void clearAnticlock(int strip, int offset, int hue, int sat, int val)
+  {
+    for (int j = offset; j < NUM_PER_STRIP[strip]; j++)
+    {
+      leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
     }
   }
 
-  int porcentaje(float percentage, int color)
+  // Se apagan en sentido horario todos los LEDs de la esfera
+  void clearClock(int strip, int offset, int hue, int sat, int val)
   {
-    //    percentage = percentage%100;
-    FastLED.clear();
+    for (int j = 0; j < NUM_PER_STRIP[strip] - offset; j++)
+    {
+      leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+    }
+  }
+  // Se encienden todos los LEDs en un sentido y se apagan en el contrario
+  void bounce(int increment, int hue, int sat, int val)
+  {
+    FastLED.clear(); // actualizar frame
     for (int i = 0; i < NUM_STRIPS; i++)
     {
-      for (int j = 0; j < 10; j++)
+      int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % ((NUM_PER_STRIP[i]) * 2);
+      if (offset < NUM_PER_STRIP[i])
       {
-        if (j < (percentage / 100) * 10)
+        fillClock(i, offset, hue, sat, val);
+      }
+      else
+      {
+        clearAnticlock(i, offset - NUM_PER_STRIP[i], hue, sat, val);
+      }
+    }
+    FastLED.show(); // mostrar frame
+  }
+
+  // Se encienden todos los LEDs en un sentido y se apagan en el cmismo sentido
+  void snake(int increment, int hue, int sat, int val)
+  {
+    FastLED.clear(); // actualizar frame
+
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % ((NUM_PER_STRIP[i]) * 2);
+      if (offset < NUM_PER_STRIP[i])
+      {
+        fillClock(i, offset, hue, sat, val);
+      }
+      else
+      {
+        clearClock(i, offset - NUM_PER_STRIP[i], hue, sat, val);
+      }
+    }
+    FastLED.show(); // mostrar frame
+  }
+  // Se encienden y apagan todos los LEDs en un sentido y luego lo mismo en el sentido contrario
+  void snakeBounce(int increment, int hue, int sat, int val)
+  {
+    FastLED.clear(); // actualizar frame
+
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % ((NUM_PER_STRIP[i]) * 4);
+      if (offset < NUM_PER_STRIP[i])
+      {
+        fillClock(i, offset, hue, sat, val);
+      }
+      else if (offset < 2 * NUM_PER_STRIP[i])
+      {
+
+        clearClock(i, offset - NUM_PER_STRIP[i], hue, sat, val);
+      }
+      else if (offset < 3 * NUM_PER_STRIP[i])
+      {
+
+        fillAnticlock(i, offset - 2 * NUM_PER_STRIP[i], hue, sat, val);
+      }
+      else
+      {
+
+        clearAnticlock(i, offset - 3 * NUM_PER_STRIP[i], hue, sat, val);
+      }
+      FastLED.show(); // mostrar frame
+    }
+    // Se encienden todos los LEDs en un sentido, se apagan en el contrario y luego lo mismo empezando en el sentido contrario
+    void doubleBounce(int increment, int hue, int sat, int val)
+    {
+      FastLED.clear(); // actualizar frame
+
+      for (int i = 0; i < NUM_STRIPS; i++)
+      {
+        int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % ((NUM_PER_STRIP[i]) * 4);
+        if (offset < NUM_PER_STRIP[i])
         {
-          leds[i][j] = CHSV(color, 255, 255);
+          fillClock(i, offset, hue, sat, val);
+        }
+        else if (offset < 2 * NUM_PER_STRIP[i])
+        {
+          clearAnticlock(i, offset - NUM_PER_STRIP[i], hue, sat, val);
+        }
+        else if (offset < 3 * NUM_PER_STRIP[i])
+        {
+          fillAnticlock(i, offset - 2 * NUM_PER_STRIP[i], hue, sat, val);
+        }
+        else
+        {
+          clearClock(i, offset - 3 * NUM_PER_STRIP[i], hue, sat, val);
+        }
+      }
+      FastLED.show(); // mostrar frame
+    }
+
+    // Genera una paleta de "num" colores
+    void fillClockCol(int strip, int offset, int hue, int sat, int val, int num)
+    {
+      for (int j = 0; j < NUM_PER_STRIP[strip]; j++) // all off, on to the left
+      {
+        if (j > NUM_PER_STRIP[strip] - offset)
+        {
+          leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+        }
+        else
+        {
+          leds[strip][j] = CHSV(floor((256 + hue - 256 / num) % 255), floor(255 * sat / 100), floor(255 * val / 100));
         }
       }
     }
-    FastLED.show();
-  }
 
-  void progressivePercentage(int counter, int color)
-  {
-    FastLED.clear();
-
-    for (int i = 0; i < NUM_STRIPS; i++)
+    void fillAnticlockCol(int strip, int increment, int hue, int sat, int val, int num)
     {
-      int progress = floor(counter / (NUM_STRIPS * NUM_PER_STRIP[i]));
-      if (i < progress)
+
+      int offset = increment for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
       {
-        percentageOne(i, counter, color);
+        if (j < offset)
+        {
+          leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+        }
+        else
+        {
+          leds[strip][j] = CHSV(floor((256 + hue - 256 / num) % 255), floor(255 * sat / 100), floor(255 * val / 100));
+        }
       }
     }
-    FastLED.show();
-  }
 
-  void percentageAll(int counter, int color)
-  {
-    FastLED.clear();
-    for (int i = 0; i < NUM_STRIPS; i++)
+    void snakeCol(int increment, int hue, int sat, int val, int num)
     {
-      percentageOne(i, counter, color);
+      FastLED.clear(); // actualizar frame
+      int aux = 0;
+      for (int i = 0; i < NUM_STRIPS; i++)
+      {
+        int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % (NUM_PER_STRIP[i] * num);
+        aux = floor(offset / NUM_PER_STRIP[i]);
+        // fillClockCol(i, offset-aux*NUM_PER_STRIP[i],floor(color+(256*aux/num)),val,num);
+        fillAnticlockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
+      }
+      FastLED.show(); // mostrar frame
     }
-    FastLED.show();
-  }
 
-  float modulo(float x, float y, float z)
-  {
-    return sqrt(x * x + y * y + z * z);
-  }
+    void bounceCol(int increment, int hue, int sat, int val, int num)
+    {
+      FastLED.clear(); // actualizar frame
+      int aux = 0;
+      for (int i = 0; i < NUM_STRIPS; i++)
+      {
+        int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % (NUM_PER_STRIP[i] * 2 * num);
+        // int offset=num*NUM_PER_STRIP[i]*(1+sin(2*PI*increment/(2*MAX_LED)));
+        aux = floor(offset / NUM_PER_STRIP[i]);
 
-  float mapF(float value, float start1, float stop1, float start2, float stop2)
-  {
-    float outgoing = start2 + (stop2 - start2) * ((value - start1) / (stop1 - start1));
-    return outgoing;
-  }
-};
+        if (aux % 2 == 0)
+        {
+          fillClockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
+        }
+        else
+        {
+          fillAnticlockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
+        }
+      }
+      FastLED.show(); // mostrar frame
+    }
+
+    //--------------------------------------Extra functions
+    float modulo(float x, float y, float z)
+    {
+      return sqrt(x * x + y * y + z * z);
+    }
+
+    float mapF(float val, float start1, float stop1, float start2, float stop2)
+    {
+      float outgoing = start2 + (stop2 - start2) * ((val - start1) / (stop1 - start1));
+      return outgoing;
+    }
+  };
 
 #endif
