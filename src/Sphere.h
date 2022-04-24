@@ -6,12 +6,13 @@
 #include <stdlib.h>
 
 #define LED_TYPE WS2812B
+#define PI 3.14159265359
 
 class Sphere
 {
 
 private:
-  String name;
+  String name = "";
   // int NUM_PER_STRIP[19] = {300, 300, 300, 300, 300,
   //                         300, 300, 300, 300, 300,
   //                        300, 300, 300, 300, 300,
@@ -118,17 +119,17 @@ public:
   {
     for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
     {
-      leds[i][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+      leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
     }
   }
 
-  void waveVal(int counter, int hue, int vel)
+  void waveIntensity(int counter, int hue, int sat, int val, int vel)
   {
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
       float k = mapF(i, 0, NUM_STRIPS, 0, 2 * PI);
-      colorOne(i, hue, floor(mapF(sin(k + 0.01 * vel * counter), -1, 1, 0, 100)), floor(255 * val / 100));
+      colorOne(i, hue, 255, floor(mapF(sin(k + 0.01 * vel * counter), -1, 1, 0, 100)));
     }
     FastLED.show();
   }
@@ -209,7 +210,7 @@ public:
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
-      halfLeds(i, counter + i * ratio, color);
+      halfLeds(i, hue, sat, val, counter + i * ratio);
     }
     FastLED.show();
   }
@@ -317,113 +318,115 @@ public:
       }
       FastLED.show(); // mostrar frame
     }
-    // Se encienden todos los LEDs en un sentido, se apagan en el contrario y luego lo mismo empezando en el sentido contrario
-    void doubleBounce(int increment, int hue, int sat, int val)
-    {
-      FastLED.clear(); // actualizar frame
+  }
+  // Se encienden todos los LEDs en un sentido, se apagan en el contrario y luego lo mismo empezando en el sentido contrario
+  void doubleBounce(int increment, int hue, int sat, int val)
+  {
+    FastLED.clear(); // actualizar frame
 
-      for (int i = 0; i < NUM_STRIPS; i++)
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % ((NUM_PER_STRIP[i]) * 4);
+      if (offset < NUM_PER_STRIP[i])
       {
-        int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % ((NUM_PER_STRIP[i]) * 4);
-        if (offset < NUM_PER_STRIP[i])
-        {
-          fillClock(i, offset, hue, sat, val);
-        }
-        else if (offset < 2 * NUM_PER_STRIP[i])
-        {
-          clearAnticlock(i, offset - NUM_PER_STRIP[i], hue, sat, val);
-        }
-        else if (offset < 3 * NUM_PER_STRIP[i])
-        {
-          fillAnticlock(i, offset - 2 * NUM_PER_STRIP[i], hue, sat, val);
-        }
-        else
-        {
-          clearClock(i, offset - 3 * NUM_PER_STRIP[i], hue, sat, val);
-        }
+        fillClock(i, offset, hue, sat, val);
       }
-      FastLED.show(); // mostrar frame
-    }
-
-    // Genera una paleta de "num" colores
-    void fillClockCol(int strip, int offset, int hue, int sat, int val, int num)
-    {
-      for (int j = 0; j < NUM_PER_STRIP[strip]; j++) // all off, on to the left
+      else if (offset < 2 * NUM_PER_STRIP[i])
       {
-        if (j > NUM_PER_STRIP[strip] - offset)
-        {
-          leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
-        }
-        else
-        {
-          leds[strip][j] = CHSV(floor((256 + hue - 256 / num) % 255), floor(255 * sat / 100), floor(255 * val / 100));
-        }
+        clearAnticlock(i, offset - NUM_PER_STRIP[i], hue, sat, val);
+      }
+      else if (offset < 3 * NUM_PER_STRIP[i])
+      {
+        fillAnticlock(i, offset - 2 * NUM_PER_STRIP[i], hue, sat, val);
+      }
+      else
+      {
+        clearClock(i, offset - 3 * NUM_PER_STRIP[i], hue, sat, val);
       }
     }
+    FastLED.show(); // mostrar frame
+  }
 
-    void fillAnticlockCol(int strip, int increment, int hue, int sat, int val, int num)
+  // Genera una paleta de "num" colores
+  void fillClockCol(int strip, int offset, int hue, int sat, int val, int num)
+  {
+    for (int j = 0; j < NUM_PER_STRIP[strip]; j++) // all off, on to the left
     {
-
-      int offset = increment for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
+      if (j > NUM_PER_STRIP[strip] - offset)
       {
-        if (j < offset)
-        {
-          leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
-        }
-        else
-        {
-          leds[strip][j] = CHSV(floor((256 + hue - 256 / num) % 255), floor(255 * sat / 100), floor(255 * val / 100));
-        }
+        leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+      }
+      else
+      {
+        leds[strip][j] = CHSV(floor((256 + hue - 256 / num) % 255), floor(255 * sat / 100), floor(255 * val / 100));
       }
     }
+  }
 
-    void snakeCol(int increment, int hue, int sat, int val, int num)
+  void fillAnticlockCol(int strip, int increment, int hue, int sat, int val, int num)
+  {
+
+    int offset = increment;
+    for (int j = 0; j < NUM_PER_STRIP[strip]; j++)
     {
-      FastLED.clear(); // actualizar frame
-      int aux = 0;
-      for (int i = 0; i < NUM_STRIPS; i++)
+      if (j < offset)
       {
-        int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % (NUM_PER_STRIP[i] * num);
-        aux = floor(offset / NUM_PER_STRIP[i]);
-        // fillClockCol(i, offset-aux*NUM_PER_STRIP[i],floor(color+(256*aux/num)),val,num);
+        leds[strip][j] = CHSV(hue, floor(255 * sat / 100), floor(255 * val / 100));
+      }
+      else
+      {
+        leds[strip][j] = CHSV(floor((256 + hue - 256 / num) % 255), floor(255 * sat / 100), floor(255 * val / 100));
+      }
+    }
+  }
+
+  void snakeCol(int increment, int hue, int sat, int val, int num)
+  {
+    FastLED.clear(); // actualizar frame
+    int aux = 0;
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % (NUM_PER_STRIP[i] * num);
+      aux = floor(offset / NUM_PER_STRIP[i]);
+      // fillClockCol(i, offset-aux*NUM_PER_STRIP[i],floor(color+(256*aux/num)),val,num);
+      fillAnticlockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
+    }
+    FastLED.show(); // mostrar frame
+  }
+
+  void bounceCol(int increment, int hue, int sat, int val, int num)
+  {
+    FastLED.clear(); // actualizar frame
+    int aux = 0;
+    for (int i = 0; i < NUM_STRIPS; i++)
+    {
+      int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % (NUM_PER_STRIP[i] * 2 * num);
+      // int offset=num*NUM_PER_STRIP[i]*(1+sin(2*PI*increment/(2*MAX_LED)));
+      aux = floor(offset / NUM_PER_STRIP[i]);
+
+      if (aux % 2 == 0)
+      {
+        fillClockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
+      }
+      else
+      {
         fillAnticlockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
       }
-      FastLED.show(); // mostrar frame
     }
+    FastLED.show(); // mostrar frame
+  }
 
-    void bounceCol(int increment, int hue, int sat, int val, int num)
-    {
-      FastLED.clear(); // actualizar frame
-      int aux = 0;
-      for (int i = 0; i < NUM_STRIPS; i++)
-      {
-        int offset = (increment * NUM_PER_STRIP[i] / MAX_LED) % (NUM_PER_STRIP[i] * 2 * num);
-        // int offset=num*NUM_PER_STRIP[i]*(1+sin(2*PI*increment/(2*MAX_LED)));
-        aux = floor(offset / NUM_PER_STRIP[i]);
+  //--------------------------------------Extra functions
+  float modulo(float x, float y, float z)
+  {
+    return sqrt(x * x + y * y + z * z);
+  }
 
-        if (aux % 2 == 0)
-        {
-          fillClockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
-        }
-        else
-        {
-          fillAnticlockCol(i, offset - aux * NUM_PER_STRIP[i], floor(hue + (256 * aux / num)), sat, val, num);
-        }
-      }
-      FastLED.show(); // mostrar frame
-    }
-
-    //--------------------------------------Extra functions
-    float modulo(float x, float y, float z)
-    {
-      return sqrt(x * x + y * y + z * z);
-    }
-
-    float mapF(float val, float start1, float stop1, float start2, float stop2)
-    {
-      float outgoing = start2 + (stop2 - start2) * ((val - start1) / (stop1 - start1));
-      return outgoing;
-    }
-  };
+  float mapF(float val, float start1, float stop1, float start2, float stop2)
+  {
+    float outgoing = start2 + (stop2 - start2) * ((val - start1) / (stop1 - start1));
+    return outgoing;
+  }
+};
 
 #endif

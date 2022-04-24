@@ -13,7 +13,8 @@ int hue = 0;
 int sat = 0;
 int val = 0;
 int vel = 0;
-int ex = 0;
+int ex1 = 0;
+int ex2 = 0;
 int numAnim = 10;
 int lastStationNum = 0;
 bool isPrinted = false;
@@ -56,28 +57,32 @@ const char index_html[] PROGMEM = R"rawliteral(
   <body>
     <label for="i0">Hue</label>
     <div>
-      <input type="range" id="i0" min="1" max="255" value="0" step="5" />
+      <input type="range" id="i0" min="1" max="255" value="0" step="15" />
       <output id="o0"></output>
     </div>
     <label for="i1">Sat</label>
     <div>
-      <input type="range" id="i1" min="1" max="100" value="0" step="5" />
+      <input type="range" id="i1" min="1" max="100" value="0" step="10" />
       <output id="o1"></output>
     </div>
     <label for="i2">Val</label>
     <div>
-      <input type="range" id="i2" min="1" max="100" value="0" step="5" />
+      <input type="range" id="i2" min="1" max="100" value="0" step="10" />
       <output id="o2"></output>
     </div>
     <label for="i2">Vel</label>
     <div>
-      <input type="range" id="i3" min="1" max="100" value="0" step="1" />
+      <input type="range" id="i3" min="1" max="100" value="0" step="10" />
       <output id="o3"></output>
     </div>
     <label for="i2">Ex</label>
     <div>
-      <input type="range" id="i4" min="1" max="100" value="0" step="1" />
+      <input type="range" id="i4" min="1" max="100" value="0" step="10" />
       <output id="o4"></output>
+    </div>
+    <div>
+      <input type="range" id="i5" min="1" max="100" value="0" step="10" />
+      <output id="o5"></output>
     </div>
 
     <br>
@@ -111,7 +116,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o0 = document.getElementById("o0");
       o0.innerHTML = i0.value;
       i0.addEventListener(
-        "change",
+        "input",
 
         function () {
           var xhr = new XMLHttpRequest();
@@ -128,7 +133,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o1 = document.getElementById("o1");
       o1.innerHTML = i1.value;
       i1.addEventListener(
-        "change",
+        "input",
         function () {
           var xhr = new XMLHttpRequest();
           o1.innerHTML = i1.value;
@@ -144,7 +149,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o2 = document.getElementById("o2");
       o2.innerHTML = i2.value;
       i2.addEventListener(
-        "change",
+        "input",
         function () {
           var xhr = new XMLHttpRequest();
           o2.innerHTML = i2.value;
@@ -160,7 +165,7 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o3 = document.getElementById("o3");
       o3.innerHTML = i3.value;
       i3.addEventListener(
-        "change",
+        "input",
         function () {
           var xhr = new XMLHttpRequest();
           o3.innerHTML = i3.value;
@@ -176,11 +181,27 @@ const char index_html[] PROGMEM = R"rawliteral(
       let o4 = document.getElementById("o4");
       o4.innerHTML = i4.value;
       i4.addEventListener(
-        "change",
+        "input",
         function () {
           var xhr = new XMLHttpRequest();
           o4.innerHTML = i4.value;
-          xhr.open("GET", "/b4?ex=" + i4.value, true);
+          xhr.open("GET", "/b4?ex1=" + i4.value, true);
+          xhr.send();
+        },
+        false
+      );
+    </script>
+
+    <script>
+      let i5 = document.getElementById("i5");
+      let o5 = document.getElementById("o5");
+      o5.innerHTML = i5.value;
+      i5.addEventListener(
+        "input",
+        function () {
+          var xhr = new XMLHttpRequest();
+          o5.innerHTML = i5.value;
+          xhr.open("GET", "/b5?ex2=" + i5.value, true);
           xhr.send();
         },
         false
@@ -281,14 +302,22 @@ void setup()
 
   server.on("/b4", HTTP_GET, [](AsyncWebServerRequest *request)
             {
-              String exS = request->getParam("ex")->value();
-              ex = exS.toInt();
-              Serial.println(ex);
+              String ex1S = request->getParam("ex1")->value();
+              ex1 = ex1S.toInt();
+              Serial.println(ex1);
+              request->send_P(200, "text/plain", "bien bro"); });
+
+  server.on("/b5", HTTP_GET, [](AsyncWebServerRequest *request)
+            {
+              String ex2S = request->getParam("ex2")->value();
+              ex2 = ex2S.toInt();
+              Serial.println(ex2);
               request->send_P(200, "text/plain", "bien bro"); });
 
   server.on("/heap", HTTP_GET, [](AsyncWebServerRequest *request)
             { request->send(200, "text/plain", String(ESP.getFreeHeap())); 
                 Serial.println("Heap cleared"); });
+
   server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request)
             {
     request->send(200,"text/plain","ok");
@@ -320,34 +349,34 @@ void loop()
   switch (anim)
   {
   case 0:
-    light.waveIntensity(counter, hue, ex);
+    light.waveIntensity(counter, hue, sat, val, vel);
     break;
   case 1:
-    light.percentageAll((counter * ex) % 100, hue);
+    light.simpleColor(hue, sat, val);
     break;
   case 2:
-    light.simpleColor(hue);
+    light.danceFalf(counter * vel, hue, sat, val, ex1);
     break;
   case 3:
-    light.danceFalf(counter * ex, 1, hue);
+    light.partitionAll(counter * vel, hue, sat, val, ex1, ex2);
     break;
   case 4:
-    light.danceFalf(counter * ex, 10, hue);
+    light.partitionAll(counter * vel, hue, sat, val, ex1, ex2);
     break;
   case 5:
-    light.partitionAll(counter * ex, 20, hue);
+    light.bounce(counter * vel, hue, sat, val);
     break;
   case 6:
-    light.chaosAll(sat, counter * ex, hue, 100);
+    light.snake(counter * vel, hue, sat, val);
     break;
   case 7:
-    light.busAll(sat, counter * ex, hue, 100);
+    light.snakeBounce(counter * vel, hue, sat, val);
     break;
   case 8:
-    light.busAll(sat, -counter * ex, hue, 100);
+    light.snakeCol(counter * vel, hue, sat, val, ex1);
     break;
   default:
-    light.percentageAll((counter * ex) % 100, hue);
+    light.bounceCol(counter * vel, hue, sat, val, ex1);
     break;
   }
   if (WiFi.softAPgetStationNum() > 0 && isPrinted == false)
