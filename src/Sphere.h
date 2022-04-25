@@ -129,7 +129,7 @@ public:
     for (int i = 0; i < NUM_STRIPS; i++)
     {
       float k = mapF(i, 0, NUM_STRIPS, 0, 2 * PI);
-      colorOne(i, hue, 255, floor(mapF(sin(k + 0.01 * vel * counter), -1, 1, 0, 100)));
+      colorOne(i, hue, 255, floor(mapF(sin(k + 0.01 * vel * counter), -1, 1, 0, val)));
     }
     FastLED.show();
   }
@@ -210,7 +210,7 @@ public:
     FastLED.clear();
     for (int i = 0; i < NUM_STRIPS; i++)
     {
-      halfLeds(i, hue, sat, val, counter + i * ratio);
+      halfLeds(i, counter + i * ratio, hue, sat, val);
     }
     FastLED.show();
   }
