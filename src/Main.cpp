@@ -57,31 +57,31 @@ const char index_html[] PROGMEM = R"rawliteral(
   <body>
     <label for="i0">Hue</label>
     <div>
-      <input type="range" id="i0" min="1" max="255" value="0" step="15" />
+      <input type="range" id="i0" min="1" max="255" value="1" step="10" />
       <output id="o0"></output>
     </div>
     <label for="i1">Sat</label>
     <div>
-      <input type="range" id="i1" min="1" max="100" value="0" step="10" />
+      <input type="range" id="i1" min="1" max="100" value="1" step="5" />
       <output id="o1"></output>
     </div>
     <label for="i2">Val</label>
     <div>
-      <input type="range" id="i2" min="1" max="100" value="0" step="10" />
+      <input type="range" id="i2" min="1" max="100" value="1" step="5" />
       <output id="o2"></output>
     </div>
     <label for="i2">Vel</label>
     <div>
-      <input type="range" id="i3" min="1" max="100" value="0" step="10" />
+      <input type="range" id="i3" min="1" max="30" value="1" step="1" />
       <output id="o3"></output>
     </div>
     <label for="i2">Ex</label>
     <div>
-      <input type="range" id="i4" min="1" max="100" value="0" step="10" />
+      <input type="range" id="i4" min="1" max="100" value="1" step="5" />
       <output id="o4"></output>
     </div>
     <div>
-      <input type="range" id="i5" min="1" max="100" value="0" step="10" />
+      <input type="range" id="i5" min="1" max="100" value="0" step="5" />
       <output id="o5"></output>
     </div>
 
@@ -259,6 +259,8 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEventTyp
 void setup()
 {
   Serial.begin(9600);
+
+  Serial.printf("%d utilizado de %d:  ---> %d %\n", ESP.getFreeHeap(), ESP.getHeapSize(), (ESP.getFreeHeap() / ESP.getHeapSize()) * 100);
   light.setPins();
   accessPoint.setAccess();
 
@@ -332,6 +334,7 @@ void setup()
 
 void loop()
 {
+  Serial.printf("%d utilizado de %d:  ---> %d %\n", ESP.getFreeHeap(), ESP.getHeapSize(), (ESP.getFreeHeap() / ESP.getHeapSize()) * 100);
 
   unsigned long currentMillis = millis();
 

@@ -187,7 +187,7 @@ public:
       }
       else
       {
-        partitionOne(yoff, hue, sat, val, size, parts);
+        partitionOne(yoff, hue, sat, floor(val * 0.4), size, parts);
       }
     }
     FastLED.show();
